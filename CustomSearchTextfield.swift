@@ -9,11 +9,17 @@
 import Foundation
 import UIKit
 
-class CustomSearchTextField: UITextField{
-    var tableView: UITableView?
-    var connections: [Connection] = [Connection]()
-    var results: [Connection] = [Connection]()
+enum SearchTextField: Int {
+    case from = 0
+    case to
+}
 
+class CustomSearchTextField: UITextField{
+    weak var filterDelegate: filterSearch?
+    var tableView: UITableView?
+    var departureResults: [Connection] = [Connection]()
+    var destinationResults: [Connection] = [Connection]()
+    
     // Connecting the new element to the parent view
     open override func willMove(toWindow newWindow: UIWindow?) {
         super.willMove(toWindow: newWindow)
@@ -23,9 +29,7 @@ class CustomSearchTextField: UITextField{
     
     override open func willMove(toSuperview newSuperview: UIView?) {
         super.willMove(toSuperview: newSuperview)
-        
         self.addTarget(self, action: #selector(CustomSearchTextField.textFieldDidChange), for: .editingChanged)
-
     }
     
     
@@ -36,20 +40,13 @@ class CustomSearchTextField: UITextField{
     }
     
     @objc open func textFieldDidChange(){
-        print("Text changed ...")
-        filter()
+        filterDelegate?.filter(textfieldType: self.tag == SearchTextField.from.rawValue ? SearchTextField.from : SearchTextField.to, searchText: self.text!)
         updateSearchTableView()
         tableView?.isHidden = false
     }
 
-    fileprivate func filter() {
-        self.results = connections.filter{ !($0.from.range(of: self.text!, options: .caseInsensitive) != nil) }
-        print("self.text " + self.text!)
-        tableView?.reloadData()
 
-    }
 }
-
 
 extension CustomSearchTextField: UITableViewDelegate, UITableViewDataSource {
     // MARK: TableViewDataSource methods
@@ -58,23 +55,33 @@ extension CustomSearchTextField: UITableViewDelegate, UITableViewDataSource {
     }
     
     public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return results.count
+        if self.tag == SearchTextField.from.rawValue {
+            return departureResults.count
+        } else {
+            return destinationResults.count
+        }
     }
     
     // MARK: TableViewDelegate methods
-    
     //Adding rows in the tableview with the data from dataList
-    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "CustomSearchTextFieldCell", for: indexPath) as UITableViewCell
         cell.backgroundColor = UIColor.clear
-        cell.textLabel?.text = results[indexPath.row].to
+        if self.tag == SearchTextField.from.rawValue {
+            cell.textLabel?.text = departureResults[indexPath.row].from
+        } else {
+            cell.textLabel?.text = destinationResults[indexPath.row].to
+        }
         return cell
     }
     
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         print("selected row")
-        self.text = results[indexPath.row].to
+        if self.tag == SearchTextField.from.rawValue {
+            self.text = departureResults[indexPath.row].from
+        } else {
+            self.text = destinationResults[indexPath.row].to
+        }
         tableView.isHidden = true
         self.endEditing(true)
     }
