@@ -43,13 +43,8 @@ class CustomSearchTextField: UITextField{
     }
 
     fileprivate func filter() {
-//        self.results = []
         self.results = connections.filter{ !($0.from.range(of: self.text!, options: .caseInsensitive) != nil) }
         print("self.text " + self.text!)
-//        let filtered = connections.filter{ !($0.from.range(of: self.text!, options: .caseInsensitive) != nil) }
-//        filtered.forEach { print($0.from) }
-//        print("self.text " + self.text!)
-//        self.results = filtered
         tableView?.reloadData()
 
     }
