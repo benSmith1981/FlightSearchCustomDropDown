@@ -57,7 +57,6 @@ extension ViewController: filterSearch {
             print("filter the destination")
             self.destinationResults = self.destinationResults.filter{ ($0.to.range(of: searchText, options: .caseInsensitive) != nil) }
             toSearchTextfield?.destinationResults = self.destinationResults
-//            self.destinationResults = connections.filter{ ($0.from.range(of: searchText, options: .caseInsensitive) != nil) }
             toSearchTextfield.tableView?.reloadData()
 
         }
